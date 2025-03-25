@@ -1,0 +1,243 @@
+{
+  "name": "ScraperLinkedinPerfiles_Input",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        -220
+      ],
+      "id": "2a050898-a1e8-4524-913c-40930b8d007b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.query }}"
+            },
+            {
+              "content": "Parsea el contenido JSON de 'query' y genera los siguientes parámetros por separado:\n\nposicion\nsector\nubicacion",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -980,
+        -220
+      ],
+      "id": "22239bea-221a-4af7-a0fe-b01811b00916",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "eAwXja4jqAqvtgVB",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=site:linkedin.com/in/ {{ $json.message.content.posicion }} {{ $json.message.content.sector }} {{ $json.message.content.ubicacion }}"
+            },
+            {
+              "name": "api_key",
+              "value": "ea18dc7f46c7255442efc3ede685283ea398ca7a7c5cd8ed4f0dec6f7e17e2ce"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -620,
+        -220
+      ],
+      "id": "b712b3ab-c4b5-4e04-a951-0d993f633ea1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();  // Obtiene todos los datos de la entrada\n// Extraer los perfiles de LinkedIn\nconst extractLinkedInProfiles = (items) => { \n  if (!Array.isArray(items) || items.length === 0) { \n    console.log(\"El JSON proporcionado no es válido o está vacío.\");\n    return [];\n  }\n  const data = items[0].json; // Accede a los datos del primer elemento\n  const results = data.organic_results || [];\n  return results.map(profile => ({\n    name: profile.title,\n    url: profile.link\n  }));\n};\n\n// Obtener los resultados\nconst linkedInProfiles = extractLinkedInProfiles(items);\n\n// Retornar los resultados en n8n\nreturn linkedInProfiles;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -220
+      ],
+      "id": "6b17bdd2-4a88-4ba2-b8c3-0c89511abbe0",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "applZ83LnxAaoyyYm",
+          "mode": "list",
+          "cachedResultName": "LinkedinScraperPerfiles",
+          "cachedResultUrl": "https://airtable.com/applZ83LnxAaoyyYm"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblExjwVNPbwss7MJ",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/applZ83LnxAaoyyYm/tblExjwVNPbwss7MJ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "URL": "={{ $json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -180,
+        -220
+      ],
+      "id": "89a53784-5610-4d87-94b4-205b340aabef",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "bVvKltmf5dlaskZU",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "posicion=&sector=&ubicacion=&"
+        }
+      }
+    ],
+    "HTTP Request": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ff661983-0a3a-45e8-a1ed-2b22113c455c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6687a81ecdc130ec7eb8629f5d42efaf590d115c31cb564d92401a3c14f5f523"
+  },
+  "id": "rk4eRt74zGRXsJqM",
+  "tags": []
+}

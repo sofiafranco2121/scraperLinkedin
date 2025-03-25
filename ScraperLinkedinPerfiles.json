@@ -1,0 +1,200 @@
+{
+  "name": "ScraperLinkedinPerfiles",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        -60
+      ],
+      "id": "04f0305c-399a-4cfc-bb66-9e738bcd2432",
+      "name": "When chat message received",
+      "webhookId": "66c56b96-4c76-4142-a8e2-51f0c600332c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Rol\n-Eres un asistente capaz de dar informacion sobre perfiles de linkedin de una determinada posicion, sector y ubicacion que te pida el usuario. Solo hablas en ingles.\n\n#Tareas\n-Tu función principal es responder a este mensaje {{ $json.chatInput }}.\n-Utiliza información de la herramienta getProfilesLinkedin para obtener los datos del perfil que te pida el usuario.\n-Una vez obtengas los datos con la herramienta getProfilesLinkedin, utiliza tu herramienta getProfiles para dar una lista con los perfiles brindando el nombre y url.\n\n#Notas\n-Debes traer toda la informacion que tengas de manera clara y estructurada.\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -180,
+        -60
+      ],
+      "id": "ad63ad61-e845-4339-a1c1-d55048eddc24",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        160
+      ],
+      "id": "ad1317c8-8589-4084-8fe5-71490bced883",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eAwXja4jqAqvtgVB",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "fe267852-3824-4427-b3c4-55e92085650b",
+      "name": "Window Buffer Memory"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "applZ83LnxAaoyyYm",
+          "mode": "list",
+          "cachedResultName": "LinkedinScraperPerfiles",
+          "cachedResultUrl": "https://airtable.com/applZ83LnxAaoyyYm"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblExjwVNPbwss7MJ",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/applZ83LnxAaoyyYm/tblExjwVNPbwss7MJ"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        120
+      ],
+      "id": "bc6211ee-9a5a-4bbb-b83f-eaf754072358",
+      "name": "getProfiles",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "bVvKltmf5dlaskZU",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "getProfilesLinkedin",
+        "description": "Llama a esta herramienta para obtener datos de perfiles de linkedin",
+        "workflowId": {
+          "__rl": true,
+          "value": "rk4eRt74zGRXsJqM",
+          "mode": "list",
+          "cachedResultName": "ScraperLinkedinPerfiles_Input"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        200,
+        120
+      ],
+      "id": "4f540656-9dc7-41c7-93ec-328fe69fcae5",
+      "name": "getProfilesLinkedin"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getProfiles": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getProfilesLinkedin": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "86ee33a6-77ca-40c9-bdad-7a93e72edd50",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6687a81ecdc130ec7eb8629f5d42efaf590d115c31cb564d92401a3c14f5f523"
+  },
+  "id": "J4d2bHKpW7nDccqy",
+  "tags": []
+}
